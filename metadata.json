@@ -1,0 +1,7 @@
+{
+  "name": "DocuMind Pro - Advanced OCR & Classification",
+  "description": "An enterprise-grade document processing application that uses Gemini AI for advanced OCR, field extraction, and thematic classification with simulated Microsoft MFA authentication.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
