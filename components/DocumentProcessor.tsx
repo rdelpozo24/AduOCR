@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
-import { processDocumentWithAI } from '../services/geminiService';
-import { ProcessedDocument, DocTheme } from '../types';
+import { processDocumentWithAI } from '../services/geminiService.ts';
+import { ProcessedDocument, DocTheme } from '../types.ts';
 
 interface DocumentProcessorProps {
   onDocumentAdded: (doc: ProcessedDocument) => void;
@@ -45,7 +45,6 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
       
       const newDoc: ProcessedDocument = {
         id: Math.random().toString(36).substr(2, 9),
-        // Utilizamos el nombre sugerido por la IA (ej. SAN_123.pdf) en lugar del nombre original
         fileName: result.suggestedFileName || fileData.name,
         timestamp: new Date().toLocaleString(),
         theme: result.theme as DocTheme,
@@ -70,7 +69,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Análisis Inteligente</h2>
-          <p className="text-xs text-gray-400 mt-1">Sube archivos PDF con nombres crípticos para normalizarlos.</p>
+          <p className="text-xs text-gray-400 mt-1">Sube archivos PDF. La IA extraerá el ID y los campos clave.</p>
         </div>
         <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
            <i className="fas fa-magic"></i>
@@ -91,7 +90,6 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
               </div>
               <div className="text-center">
                 <p className="text-gray-900 text-sm font-semibold truncate max-w-[200px]">{fileData.name}</p>
-                <p className="text-[10px] text-gray-400">Listo para normalizar</p>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setFileData(null); }}
                   className="mt-2 text-xs text-red-500 hover:underline"
@@ -133,12 +131,12 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
           {isProcessing ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-              Identificando Referencias...
+              Identificando Campos e ID...
             </>
           ) : (
             <>
               <i className="fas fa-microchip"></i>
-              Procesar y Renombrar
+              Procesar Documento
             </>
           )}
         </button>
