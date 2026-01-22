@@ -7,22 +7,23 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 export const processDocumentWithAI = async (base64Data: string, fileName: string) => {
   const model = "gemini-3-flash-preview";
 
-  const prompt = `Analiza este documento PDF administrativo y clasifícalo en una de estas categorías:
+  // Prompt especializado para documentos administrativos españoles
+  const prompt = `Analiza este documento PDF administrativo y clasifícalo estrictamente en una de estas categorías:
   
-  Categorías: ${Object.values(DocTheme).join(', ')}.
-
-  TAREA CRÍTICA DE RENOMBRADO:
-  1. Busca dentro del texto el "Número de Expediente", "Referencia", "ID de Documento" o "Número de Identificación".
-  2. Genera un nombre de archivo sugerido (suggestedFileName) siguiendo este formato: [TIPO_SIMPLIFICADO]_[REFERENCIA].pdf
-     - Ejemplo: SAN_2023_445.pdf, CIT_99822.pdf, RRHH_MODELOA_01.pdf
-  3. Si no encuentras una referencia clara, usa el nombre original pero límpialo de caracteres extraños.
+  1. "RRHH - Modelo Tipo A": Documentos internos de personal, nóminas o altas de un formato específico.
+  2. "RRHH - Modelo Tipo B": Contratos de trabajo o variaciones de jornada.
+  3. "Requerimiento Oficial": Peticiones formales de información de administraciones públicas o entidades externas (busca palabras como "Solicita", "Requerimiento", "Plazo").
+  4. "Acuerdo de Sanción": Notificaciones de faltas, multas o expedientes disciplinarios (busca "Sanción", "Infracción", "Resolución").
+  5. "Citación / Notificación": Convocatorias para comparecer o avisos judiciales/administrativos (busca "Citación", "Comparezca", "Fecha y hora").
+  6. "Otros Documentos": Si no encaja en lo anterior.
 
   INSTRUCCIONES DE EXTRACCIÓN:
-  - Extrae Nombres, DNI, Fechas Límite y Órgano Emisor.
-  - Para Citaciones: Fecha y Lugar obligatorios.
-  - Para Sanciones: Motivo e importe.
+  - Extrae Nombres Completos, DNI/NIE, Números de Expediente, Fechas Límite y el Órgano Emisor.
+  - Para Citaciones: Extrae obligatoriamente Fecha y Lugar de la cita.
+  - Para Sanciones: Extrae el motivo de la infracción y la cuantía si existe.
+  - Para RRHH: Extrae el ID de empleado y el periodo.
 
-  Responde estrictamente en JSON en español.`;
+  Responde siempre en español y con alta precisión.`;
 
   const pdfPart = {
     inlineData: {
@@ -41,29 +42,27 @@ export const processDocumentWithAI = async (base64Data: string, fileName: string
         properties: {
           theme: {
             type: Type.STRING,
+            description: "Categoría temática detectada.",
             enum: Object.values(DocTheme)
           },
-          suggestedFileName: {
-            type: Type.STRING,
-            description: "Nombre de archivo legible basado en el ID encontrado en el documento."
-          },
           summary: {
-            type: Type.STRING
+            type: Type.STRING,
+            description: "Resumen ejecutivo de 2 líneas."
           },
           fields: {
             type: Type.ARRAY,
             items: {
               type: Type.OBJECT,
               properties: {
-                label: { type: Type.STRING },
-                value: { type: Type.STRING },
-                confidence: { type: Type.NUMBER }
+                label: { type: Type.STRING, description: "Nombre del campo (ej: DNI, Fecha de Cita)" },
+                value: { type: Type.STRING, description: "Valor extraído" },
+                confidence: { type: Type.NUMBER, description: "Nivel de confianza 0-1" }
               },
               required: ["label", "value", "confidence"]
             }
           }
         },
-        required: ["theme", "suggestedFileName", "summary", "fields"]
+        required: ["theme", "summary", "fields"]
       }
     }
   });
