@@ -24,14 +24,10 @@ export interface ProcessedDocument {
   imageUrl: string;
 }
 
-export interface AuthState {
-  isAuthenticated: boolean;
-  user: {
-    name: string;
-    email: string;
-    avatar?: string;
-  } | null;
-  mfaVerified: boolean;
+export interface UserProfile {
+  name: string;
+  email: string;
+  role: string;
 }
 
 export interface RedistributionRule {
