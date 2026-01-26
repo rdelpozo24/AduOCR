@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
-import { processDocumentWithAI } from '../services/geminiService.ts';
-import { ProcessedDocument, DocTheme } from '../types.ts';
+import { processDocumentWithAI } from '../services/geminiService';
+import { ProcessedDocument, DocTheme } from '../types';
 
 interface DocumentProcessorProps {
   onDocumentAdded: (doc: ProcessedDocument) => void;
@@ -17,7 +17,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
     const file = e.target.files?.[0];
     if (file) {
       if (file.type !== 'application/pdf') {
-        setError("Solo se permiten archivos PDF.");
+        setError("Please upload a PDF document.");
         if (fileInputRef.current) fileInputRef.current.value = '';
         return;
       }
@@ -36,6 +36,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
 
   const processDocument = async () => {
     if (!fileData) return;
+
     setIsProcessing(true);
     setError(null);
 
@@ -49,7 +50,7 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
         theme: result.theme as DocTheme,
         fields: result.fields,
         summary: result.summary,
-        imageUrl: fileData.base64,
+        imageUrl: fileData.base64, // For PDFs, we store the base64 or a blob URL
       };
 
       onDocumentAdded(newDoc);
@@ -57,52 +58,62 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       console.error(err);
-      setError("Error de procesamiento. Verifique su API Key o conexión.");
+      setError("Failed to process PDF. Ensure it's not password protected.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-800">Carga de Documentos</h2>
-        <p className="text-xs text-slate-400 mt-1">Sube PDFs para clasificación inmediata</p>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-gray-800">New PDF Analysis</h2>
+        <div className="text-sm text-gray-500 italic">Enterprise OCR</div>
       </div>
 
       <div className="space-y-4">
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-2xl p-10 flex flex-col items-center justify-center transition-all cursor-pointer ${
-            fileData ? 'border-indigo-400 bg-indigo-50/30' : 'border-slate-200 hover:border-indigo-400 hover:bg-slate-50'
+          className={`border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center transition-all cursor-pointer ${
+            fileData ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
           }`}
         >
           {fileData ? (
-            <div className="text-center">
-              <i className="fas fa-file-pdf text-4xl text-red-500 mb-3"></i>
-              <p className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{fileData.name}</p>
-              <button 
-                onClick={(e) => { e.stopPropagation(); setFileData(null); }}
-                className="mt-3 text-[10px] font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition-colors"
-              >
-                Cancelar
-              </button>
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-20 h-20 bg-red-100 rounded-lg flex items-center justify-center text-red-600">
+                <i className="fas fa-file-pdf text-4xl"></i>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-900 font-semibold truncate max-w-[200px]">{fileData.name}</p>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setFileData(null); }}
+                  className="mt-2 text-xs text-red-500 hover:underline"
+                >
+                  Remove file
+                </button>
+              </div>
             </div>
           ) : (
             <>
-              <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 mb-4">
-                <i className="fas fa-cloud-upload-alt text-xl"></i>
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4">
+                <i className="fas fa-file-pdf text-2xl"></i>
               </div>
-              <p className="text-sm font-bold text-slate-600 text-center px-4">Arrastra o haz clic para subir</p>
-              <p className="text-[10px] text-slate-400 mt-2 font-medium">Soporta: Nóminas, Sanciones, Citaciones</p>
+              <p className="text-gray-700 font-medium">Click to upload PDF</p>
+              <p className="text-gray-400 text-sm">Classic PDF documents only</p>
             </>
           )}
-          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="application/pdf" />
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            className="hidden" 
+            accept="application/pdf"
+          />
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-xs font-medium flex items-center gap-2 animate-pulse">
-            <i className="fas fa-exclamation-triangle"></i>
+          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded text-sm flex items-center gap-2">
+            <i className="fas fa-exclamation-circle"></i>
             {error}
           </div>
         )}
@@ -110,17 +121,17 @@ const DocumentProcessor: React.FC<DocumentProcessorProps> = ({ onDocumentAdded }
         <button
           onClick={processDocument}
           disabled={!fileData || isProcessing}
-          className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-indigo-600 disabled:opacity-50 transition-all flex items-center justify-center gap-3 shadow-lg"
+          className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
         >
           {isProcessing ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-              <span>IA Leyendo Archivo...</span>
+              Analyzing PDF Content...
             </>
           ) : (
             <>
-              <i className="fas fa-bolt text-amber-400"></i>
-              <span>Analizar Documento</span>
+              <i className="fas fa-file-contract"></i>
+              Analyze PDF Document
             </>
           )}
         </button>

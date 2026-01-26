@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ProcessedDocument, DocTheme } from '../types.ts';
+import { ProcessedDocument, DocTheme } from '../types';
 
 interface HistoryTableProps {
   documents: ProcessedDocument[];
@@ -20,62 +20,62 @@ const getThemeStyles = (theme: DocTheme) => {
 
 const HistoryTable: React.FC<HistoryTableProps> = ({ documents, onSelect }) => {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-6 border-b border-gray-50 flex justify-between items-center">
-        <h3 className="font-bold text-slate-800 flex items-center gap-2">
-          <i className="fas fa-list text-indigo-500"></i>
-          Historial de Análisis
-        </h3>
-        <span className="text-[10px] font-black bg-slate-100 px-3 py-1 rounded-full text-slate-500 uppercase tracking-widest">{documents.length} Items</span>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+        <h3 className="font-bold text-gray-800">Historial de Procesamiento</h3>
+        <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">{documents.length} Documentos</span>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="bg-slate-50/50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-50">
+          <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
             <tr>
-              <th className="px-6 py-4">Fichero</th>
-              <th className="px-6 py-4">Tipo Identificado</th>
-              <th className="px-6 py-4">Procesado</th>
-              <th className="px-6 py-4 text-right">Acción</th>
+              <th className="px-6 py-4">Documento</th>
+              <th className="px-6 py-4">Tipo / Temática</th>
+              <th className="px-6 py-4">Fecha Análisis</th>
+              <th className="px-6 py-4">Estado</th>
+              <th className="px-6 py-4 text-right">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-gray-100">
             {documents.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-16 text-center">
-                  <div className="flex flex-col items-center opacity-20">
-                    <i className="fas fa-folder-open text-4xl mb-4"></i>
-                    <p className="text-sm italic">No hay documentos procesados</p>
-                  </div>
+                <td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">
+                  No hay documentos procesados. Sube un PDF para comenzar.
                 </td>
               </tr>
             ) : (
               documents.map((doc) => {
                 const styles = getThemeStyles(doc.theme);
                 return (
-                  <tr key={doc.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <tr key={doc.id} className="hover:bg-gray-50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-indigo-600 group-hover:shadow-sm transition-all">
-                          <i className={`fas ${styles.icon} text-sm`}></i>
+                        <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-gray-400 group-hover:text-blue-500 transition-colors">
+                          <i className={`fas ${styles.icon}`}></i>
                         </div>
-                        <span className="text-xs font-bold text-slate-700 truncate max-w-[140px]">{doc.fileName}</span>
+                        <span className="font-medium text-gray-700 truncate max-w-[150px]">{doc.fileName}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${styles.color}`}>
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${styles.color}`}>
                         {doc.theme}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {doc.timestamp}
+                    </td>
                     <td className="px-6 py-4">
-                      <div className="text-[10px] text-slate-400 font-medium">{doc.timestamp}</div>
+                      <div className="flex items-center gap-2 text-green-600 text-xs font-semibold">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        Clasificado
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button 
                         onClick={() => onSelect(doc)}
-                        className="p-2 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors"
-                        title="Ver detalles"
+                        className="text-blue-600 hover:text-blue-800 font-bold text-xs uppercase transition-colors"
                       >
-                        <i className="fas fa-external-link-alt text-xs"></i>
+                        Ver Detalle
                       </button>
                     </td>
                   </tr>
