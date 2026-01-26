@@ -35,8 +35,11 @@ export interface AuthState {
 }
 
 export interface RedistributionRule {
+  id: string;
+  name: string;
   theme: DocTheme;
-  targetAccount: string;
+  targetEmail: string;
+  keywords: string[];
   enabled: boolean;
 }
 
